@@ -1,18 +1,8 @@
 import { Trade } from '@tpicap/shared'
 import { getDb } from '../db/client'
+import { BASE_PRICES } from '../prices/symbolPool'
 
-export const BASE_PRICES: Record<string, number> = {
-  AAPL: 227.45,
-  MSFT: 415.20,
-  GOOGL: 178.90,
-  AMZN: 198.75,
-  NVDA: 875.40,
-  META: 562.30,
-  TSLA: 342.60,
-  JPM: 223.15,
-  V: 289.80,
-  JNJ: 162.45,
-}
+export { BASE_PRICES }
 
 const SYMBOLS = Object.keys(BASE_PRICES)
 const TRADERS = ['JSMITH', 'ABROWN', 'MJONES', 'KDAVIS', 'LWILSON']
