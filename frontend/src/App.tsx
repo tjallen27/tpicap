@@ -1,4 +1,5 @@
 import React from 'react';
+import { BlotterPage } from './components/BlotterPage';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -30,10 +31,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     }
     return this.props.children;
   }
-}
-
-function BlotterPage() {
-  return <div>Blotter</div>;
 }
 
 export default function App() {
