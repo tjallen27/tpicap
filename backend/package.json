@@ -8,6 +8,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/cors": "^11.4.1",
     "@fastify/websocket": "^11.3.7",
     "@tpicap/shared": "workspace:*",
     "fastify": "^5.1.0",

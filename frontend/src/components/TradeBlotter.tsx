@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import type { ColDef, ValueGetterParams, ValueFormatterParams, RowClassParams } from 'ag-grid-community';
+import type { ColDef, GridApi, IRowNode, ValueGetterParams, ValueFormatterParams, RowClassParams } from 'ag-grid-community';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 import type { Trade } from '@tpicap/shared';
@@ -22,6 +22,41 @@ interface TradeBlotterProps {
 
 export function TradeBlotter({ trades, onAmend, onCancel, filtered }: TradeBlotterProps) {
   const prices = usePrices();
+  const gridApiRef = useRef<GridApi | null>(null);
+  const prevPricesRef = useRef<Record<string, number>>({});
+  const priceDirectionsRef = useRef<Record<string, 'up' | 'down'>>({});
+
+  useEffect(() => {
+    const directions: Record<string, 'up' | 'down'> = {};
+    for (const [symbol, price] of Object.entries(prices)) {
+      const prev = prevPricesRef.current[symbol];
+      if (prev !== undefined && price !== prev) {
+        directions[symbol] = price > prev ? 'up' : 'down';
+      }
+    }
+    prevPricesRef.current = prices;
+
+    if (!gridApiRef.current) return;
+    const api = gridApiRef.current;
+
+    const affectedNodes: IRowNode<Trade>[] = [];
+    api.forEachNode(node => {
+      if (node.data && directions[node.data.symbol]) affectedNodes.push(node);
+    });
+
+    priceDirectionsRef.current = directions;
+    if (affectedNodes.length > 0) api.redrawRows({ rowNodes: affectedNodes });
+
+    // Also refresh P&L values for updated prices
+    api.refreshCells({ columns: ['pnl'], force: true });
+
+    const timer = setTimeout(() => {
+      priceDirectionsRef.current = {};
+      if (affectedNodes.length > 0) api.redrawRows({ rowNodes: affectedNodes });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [prices]);
 
   const columnDefs = useMemo<ColDef<Trade>[]>(() => [
     { field: 'id', headerName: 'Trade ID' },
@@ -67,11 +102,8 @@ export function TradeBlotter({ trades, onAmend, onCancel, filtered }: TradeBlott
       },
       valueFormatter: (p: ValueFormatterParams<Trade, number>) =>
         p.value != null ? formatCurrency(p.value) : '',
-      cellClass: (p) => {
-        if (p.value > 0) return 'pnl-positive';
-        if (p.value < 0) return 'pnl-negative';
-        return 'pnl-neutral';
-      },
+      cellClass: (p) =>
+        p.value > 0 ? 'pnl-positive' : p.value < 0 ? 'pnl-negative' : 'pnl-neutral',
     },
     {
       colId: 'actions',
@@ -83,11 +115,18 @@ export function TradeBlotter({ trades, onAmend, onCancel, filtered }: TradeBlott
 
   const context = useMemo(() => ({ onAmend, onCancel }), [onAmend, onCancel]);
 
-  const getRowClass = (p: RowClassParams<Trade>) =>
-    p.data?.status === 'CANCELLED' ? 'row-cancelled' : undefined;
+  const getRowClass = (p: RowClassParams<Trade>) => {
+    const classes: string[] = [];
+    if (p.data?.status === 'CANCELLED') classes.push('row-cancelled');
+    if (p.data) {
+      const dir = priceDirectionsRef.current[p.data.symbol];
+      if (dir) classes.push(`price-flash-${dir}`);
+    }
+    return classes.length > 0 ? classes : undefined;
+  };
 
   return (
-    <div data-testid="ag-grid-wrapper" className="ag-theme-alpine" style={{ height: 600 }}>
+    <div data-testid="ag-grid-wrapper" className="ag-theme-alpine">
       {trades.length === 0 && filtered ? (
         <div className="empty-filter-message">No trades match your search</div>
       ) : (
@@ -98,6 +137,8 @@ export function TradeBlotter({ trades, onAmend, onCancel, filtered }: TradeBlott
           components={{ TradeActions }}
           context={context}
           getRowClass={getRowClass}
+          animateRows={false}
+          onGridReady={(e) => { gridApiRef.current = e.api; }}
           initialState={{
             sort: {
               sortModel: [{ colId: 'tradeTimestamp', sort: 'desc' }],

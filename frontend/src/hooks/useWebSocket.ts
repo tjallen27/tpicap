@@ -49,9 +49,11 @@ export function useWebSocket(): { status: WsStatus; retry: () => void } {
         };
 
         if (name === 'trade:created') {
-          queryClient.setQueryData<Trade[]>(['trades'], old =>
-            old ? [...old, payload as Trade] : [payload as Trade]
-          );
+          const incoming = payload as Trade;
+          queryClient.setQueryData<Trade[]>(['trades'], old => {
+            if (!old) return [incoming];
+            return old.some(t => t.id === incoming.id) ? old : [...old, incoming];
+          });
         } else if (name === 'trade:amended' || name === 'trade:cancelled') {
           const updated = payload as Trade;
           queryClient.setQueryData<Trade[]>(['trades'], old =>

@@ -1,5 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export function usePrices(): Record<string, number> {
-  return useQueryClient().getQueryData<Record<string, number>>(['prices']) ?? {};
+  const { data } = useQuery<Record<string, number>>({
+    queryKey: ['prices'],
+    queryFn: () => ({} as Record<string, number>),
+    staleTime: Infinity,
+  });
+  return data ?? {};
 }

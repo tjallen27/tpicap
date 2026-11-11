@@ -14,7 +14,7 @@ async function main(): Promise<void> {
   await connectDb(config.mongodbUri)
   await ensureTradeIndexes()
 
-  const app = createApp()
+  const app = await createApp()
 
   await registerWsPlugin(app)
   registerTradeRoutes(app)
