@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "test": "vitest run"
   },
   "dependencies": {
-    "@fastify/websocket": "^10.0.1",
+    "@fastify/websocket": "^11.3.7",
     "@tpicap/shared": "workspace:*",
     "fastify": "^5.1.0",
     "finnhub": "^1.2.17",
