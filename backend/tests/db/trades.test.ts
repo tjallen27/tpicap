@@ -72,6 +72,18 @@ describe('patchTrade', () => {
   it('returns null for unknown id', async () => {
     expect(await patchTrade('TRD-999999', { quantity: 1 })).toBeNull()
   })
+
+  it('returns null for CANCELLED trade', async () => {
+    await insertTrade({ ...t1, status: 'CANCELLED' })
+    expect(await patchTrade('TRD-100001', { quantity: 500 })).toBeNull()
+  })
+})
+
+describe('insertTrade', () => {
+  it('throws on duplicate id', async () => {
+    await insertTrade({ ...t1 })
+    await expect(insertTrade({ ...t1 })).rejects.toThrow()
+  })
 })
 
 describe('setTradeCancelled', () => {

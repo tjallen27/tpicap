@@ -31,7 +31,7 @@ describe('CreateTradeSchema', () => {
 })
 
 describe('AmendTradeSchema', () => {
-  it('accepts empty object', () => expect(AmendTradeSchema.safeParse({}).success).toBe(true))
+  it('rejects empty object', () => expect(AmendTradeSchema.safeParse({}).success).toBe(false))
   it('accepts partial fields', () => expect(AmendTradeSchema.safeParse({ quantity: 500 }).success).toBe(true))
   it('rejects quantity 0', () => expect(AmendTradeSchema.safeParse({ quantity: 0 }).success).toBe(false))
 })

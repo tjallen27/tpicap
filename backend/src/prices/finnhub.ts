@@ -12,6 +12,7 @@ export async function fetchFinnhubPrices(
         new Promise<{ symbol: string; price: number }>((resolve, reject) => {
           client.quote(symbol, (error: Error | null, data: { c: number } | null) => {
             if (error || !data) return reject(error ?? new Error('No data'))
+            if (data.c <= 0) return reject(new Error('No price'))
             resolve({ symbol, price: data.c })
           })
         })

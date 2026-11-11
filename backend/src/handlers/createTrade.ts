@@ -13,13 +13,18 @@ export async function createTrade(request: FastifyRequest, reply: FastifyReply):
     return reply.status(400).send({ error: 'Validation failed', issues: result.error.issues })
   }
 
-  const trade: Trade = {
-    ...result.data,
-    id: generateTradeId(),
-    status: 'ACTIVE',
+  let trade: Trade | null = null
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate: Trade = { ...result.data, id: generateTradeId(), status: 'ACTIVE' }
+    try {
+      await insertTrade(candidate)
+      trade = candidate
+      break
+    } catch (err: any) {
+      if (err.code !== 11000 || attempt === 9) throw err
+    }
   }
 
-  await insertTrade(trade)
-  wsManager.broadcast('trade:created', trade)
-  reply.status(201).send(trade)
+  wsManager.broadcast('trade:created', trade!)
+  reply.status(201).send(trade!)
 }

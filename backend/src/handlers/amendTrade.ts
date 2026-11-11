@@ -22,16 +22,13 @@ export async function amendTrade(
     return reply.status(400).send({ error: 'Validation failed', issues: result.error.issues })
   }
 
-  const existing = await findTradeById(id)
-  if (!existing) {
-    return reply.status(404).send({ error: 'Trade not found' })
-  }
-
-  if (existing.status === 'CANCELLED') {
+  const updated = await patchTrade(id, result.data)
+  if (!updated) {
+    const existing = await findTradeById(id)
+    if (!existing) return reply.status(404).send({ error: 'Trade not found' })
     return reply.status(409).send({ error: 'Trade is cancelled' })
   }
 
-  const updated = await patchTrade(id, result.data)
   wsManager.broadcast('trade:amended', updated)
-  reply.status(200).send(updated)
+  return reply.status(200).send(updated)
 }

@@ -71,4 +71,9 @@ describe('PATCH /trades/:id', () => {
     const res = await app.inject({ method: 'PATCH', url: '/trades/TRD-100001', payload: { quantity: 0 } })
     expect(res.statusCode).toBe(400)
   })
+
+  it('returns 400 for empty body', async () => {
+    const res = await app.inject({ method: 'PATCH', url: '/trades/TRD-100001', payload: {} })
+    expect(res.statusCode).toBe(400)
+  })
 })

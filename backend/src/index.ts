@@ -1,5 +1,6 @@
 import { parseConfig } from './config'
 import { connectDb } from './db/client'
+import { ensureTradeIndexes } from './db/trades'
 import { createApp } from './server'
 import { registerWsPlugin } from './websocket/plugin'
 import { wsManager } from './websocket/manager'
@@ -11,6 +12,7 @@ async function main(): Promise<void> {
   const config = parseConfig()
 
   await connectDb(config.mongodbUri)
+  await ensureTradeIndexes()
 
   const app = createApp()
 

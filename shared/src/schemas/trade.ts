@@ -21,4 +21,5 @@ export type CreateTradeInput = z.infer<typeof CreateTradeSchema>
 export const AmendTradeSchema = TradeSchema
   .pick({ quantity: true, price: true, trader: true, book: true, counterparty: true })
   .partial()
+  .refine(obj => Object.keys(obj).length > 0, { message: 'At least one field required' })
 export type AmendTradeInput = z.infer<typeof AmendTradeSchema>

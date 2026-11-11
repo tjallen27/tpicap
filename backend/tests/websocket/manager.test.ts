@@ -33,4 +33,14 @@ describe('createWsManager', () => {
     broadcast('trade:created', {})
     expect(mockWs.send).not.toHaveBeenCalled()
   })
+
+  it('broadcast continues to other clients when one send throws', () => {
+    const { addClient, broadcast } = createWsManager()
+    const throwingWs = { readyState: 1, send: vi.fn().mockImplementation(() => { throw new Error('socket error') }) } as unknown as WebSocket
+    const goodWs = { readyState: 1, send: vi.fn() } as unknown as WebSocket
+    addClient(throwingWs)
+    addClient(goodWs)
+    expect(() => broadcast('trade:created', {})).not.toThrow()
+    expect(goodWs.send).toHaveBeenCalledOnce()
+  })
 })

@@ -18,7 +18,11 @@ export function createWsManager(): WsManager {
       const message = JSON.stringify({ event, payload })
       for (const ws of clients) {
         if (ws.readyState === 1) {
-          ws.send(message)
+          try {
+            ws.send(message)
+          } catch {
+            clients.delete(ws)
+          }
         }
       }
     },
