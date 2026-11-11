@@ -71,7 +71,27 @@ tpicap-blotter/
 
 ## Installation
 
-> Prerequisites: Node.js 20+, pnpm
+> Prerequisites: Node.js 20+, pnpm, MongoDB 7
+
+### MongoDB
+
+MongoDB must be running on `localhost:27017` before starting the backend.
+
+**macOS (Homebrew):**
+```bash
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+```
+
+**Docker:**
+```bash
+docker run -d --name mongo -p 27017:27017 mongo:7
+```
+
+Verify it is running: `mongosh --eval "db.runCommand({ ping: 1 })"` should print `{ ok: 1 }`.
+
+### Application
 
 ```bash
 # Clone the repository
